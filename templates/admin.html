@@ -1,0 +1,125 @@
+
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard | Nexora Business{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <div class="admin-topbar">
+            <div>
+                <div class="eyebrow">NEXORA / CONTROL CENTER</div>
+                <h1>Inquiry dashboard<span class="gradient-text">.</span></h1>
+                <p>Review and manage incoming business inquiries.</p>
+            </div>
+
+            <div class="admin-actions">
+                <a class="button secondary" href="{{ url_for('home') }}">View website ↗</a>
+
+                <form action="{{ url_for('logout') }}" method="POST">
+                    {{ logout_form.hidden_tag() }}
+                    <button class="button button-outline" type="submit">Log out</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span>Total inquiries</span>
+                <strong>{{ total }}</strong>
+            </div>
+            <div class="stat-card">
+                <span>New inquiries</span>
+                <strong>{{ new_count }}</strong>
+            </div>
+            <div class="stat-card">
+                <span>Other inquiries</span>
+                <strong>{{ total - new_count }}</strong>
+            </div>
+        </div>
+
+        <div class="table-panel">
+            <div class="table-heading">
+                <h2>Customer inquiries</h2>
+                <span class="status-pill">{{ total }} total</span>
+            </div>
+
+            {% if inquiries %}
+                <div class="table-scroll">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Service & message</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for inquiry in inquiries %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ inquiry.name }}</strong>
+                                        <p>{{ inquiry.email }}</p>
+                                    </td>
+
+                                    <td>
+                                        <strong>{{ inquiry.service }}</strong>
+                                        <p>{{ inquiry.message }}</p>
+                                    </td>
+
+                                    <td>
+                                        {% if inquiry.created_at %}
+                                            {{ inquiry.created_at.strftime("%d %b %Y") }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        <span class="status-pill">{{ inquiry.status }}</span>
+                                    </td>
+
+                                    <td>
+                                        <form class="inline-form"
+                                              action="{{ url_for('update_status', inquiry_id=inquiry.id) }}"
+                                              method="POST">
+                                            {{ status_form.hidden_tag() }}
+                                            <select class="admin-input"
+                                                    name="status"
+                                                    aria-label="Status for inquiry {{ inquiry.id }}">
+                                                <option value="New" {% if inquiry.status == "New" %}selected{% endif %}>New</option>
+                                                <option value="In Progress" {% if inquiry.status == "In Progress" %}selected{% endif %}>In Progress</option>
+                                                <option value="Completed" {% if inquiry.status == "Completed" %}selected{% endif %}>Completed</option>
+                                            </select>
+                                            <button class="button button-outline" type="submit">Save</button>
+                                        </form>
+
+                                        <form action="{{ url_for('delete_inquiry', inquiry_id=inquiry.id) }}"
+                                              method="POST"
+                                              style="margin-top: 8px;"
+                                              onsubmit="return confirm('Delete this inquiry permanently?');">
+                                            {{ delete_form.hidden_tag() }}
+                                            <button class="button button-outline delete-button" type="submit">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <h3>No inquiries yet</h3>
+                    <p>New submissions from your contact form will appear here.</p>
+                    <a href="{{ url_for('home') }}#contact" class="button">Test contact form ↗</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
